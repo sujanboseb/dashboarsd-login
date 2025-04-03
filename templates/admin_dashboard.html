@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        h2, h3 {
+            text-align: center;
+        }
+        .filter-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-container select {
+            padding: 8px;
+            font-size: 14px;
+        }
+        .chart-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .chart-box {
+            width: 45%;
+        }
+    </style>
+</head>
+<body>
+    <h2>Sales Dashboard</h2>
+    <div class="filter-container">
+        <select id="orderNumber"><option value="">Select Order Number</option></select>
+        <select id="orderDay"><option value="">Select Order Day</option></select>
+        <select id="orderMonth"><option value="">Select Order Month</option></select>
+        <select id="orderYear"><option value="">Select Order Year</option></select>
+        <select id="productName"><option value="">Select Product Name</option></select>
+        <select id="uom"><option value="">Select UOM</option></select>
+    </div>
+
+    <div class="chart-container">
+        <div class="chart-box">
+            <h3>Top 5 Product Sales</h3>
+            <canvas id="topSalesChart"></canvas>
+        </div>
+        <div class="chart-box">
+            <h3>Least 5 Product Sales</h3>
+            <canvas id="leastSalesChart"></canvas>
+        </div>
+    </div>
+
+    <h3>Monthly Total Sales</h3>
+    <canvas id="monthlySalesChart"></canvas>
+
+    <script>
+        let allData = [];
+        function getMonthName(monthIndex) {
+            return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
+        }
+        async function fetchData() {
+            const response = await fetch("/api/data");
+            allData = await response.json();
+            populateDropdown("orderNumber", [...new Set(allData.map(item => item["Order Number"]))]);
+            populateDropdown("orderDay", [...new Set(allData.map(item => new Date(item["Order Date"]).getDate()))]);
+            populateDropdown("orderMonth", [...new Set(allData.map(item => getMonthName(new Date(item["Order Date"]).getMonth())))]);
+            populateDropdown("orderYear", [...new Set(allData.map(item => new Date(item["Order Date"]).getFullYear()))]);
+            populateDropdown("productName", [...new Set(allData.map(item => item["Product Name"]))]);
+            populateDropdown("uom", [...new Set(allData.map(item => item["UOM"]))]);
+            updateCharts();
+        }
+        function populateDropdown(id, values) {
+            const dropdown = document.getElementById(id);
+            values.sort((a, b) => a - b).forEach(value => {
+                const option = document.createElement("option");
+                option.textContent = value;
+                option.value = value;
+                dropdown.appendChild(option);
+            });
+            dropdown.addEventListener("change", updateCharts);
+        }
+        function updateCharts() {
+            let filteredData = allData.filter(item => {
+                const orderDate = new Date(item["Order Date"]);
+                return (
+                    (!document.getElementById("orderNumber").value || item["Order Number"] === document.getElementById("orderNumber").value) &&
+                    (!document.getElementById("orderDay").value || orderDate.getDate() == document.getElementById("orderDay").value) &&
+                    (!document.getElementById("orderMonth").value || getMonthName(orderDate.getMonth()) == document.getElementById("orderMonth").value) &&
+                    (!document.getElementById("orderYear").value || orderDate.getFullYear() == document.getElementById("orderYear").value) &&
+                    (!document.getElementById("productName").value || item["Product Name"] === document.getElementById("productName").value) &&
+                    (!document.getElementById("uom").value || item["UOM"] === document.getElementById("uom").value)
+                );
+            });
+            renderProductCharts(filteredData);
+            renderMonthlyChart(filteredData);
+        }
+        function renderProductCharts(data) {
+            const productSales = {};
+            data.forEach(item => {
+                const productName = item["Product Name"];
+                productSales[productName] = (productSales[productName] || 0) + item.Amount;
+            });
+            const productArray = Object.keys(productSales).map(productName => ({ productName, totalSales: productSales[productName] }));
+            const sortedProducts = productArray.sort((a, b) => b.totalSales - a.totalSales);
+            const top5 = sortedProducts.slice(0, 5);
+            const least5 = sortedProducts.slice(-5);
+            renderChart("topSalesChart", top5, "#33b5fb");
+            renderChart("leastSalesChart", least5, "#ff6b6b");
+        }
+        function renderChart(canvasId, data, color) {
+            const ctx = document.getElementById(canvasId).getContext("2d");
+            if (window[canvasId + "Instance"]) {
+                window[canvasId + "Instance"].destroy();
+            }
+            window[canvasId + "Instance"] = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: data.map(item => item.productName),
+                    datasets: [{ label: "Sales Amount", data: data.map(item => item.totalSales), backgroundColor: color }]
+                }
+            });
+        }
+        function renderMonthlyChart(data) {
+            const monthlySales = {};
+            data.forEach(item => {
+                const orderDate = new Date(item["Order Date"]);
+                const monthYear = getMonthName(orderDate.getMonth()) + " " + orderDate.getFullYear();
+                monthlySales[monthYear] = (monthlySales[monthYear] || 0) + item.Amount;
+            });
+            const sortedMonths = Object.keys(monthlySales).sort();
+            const totalSales = sortedMonths.map(month => monthlySales[month]);
+            const ctx = document.getElementById("monthlySalesChart").getContext("2d");
+            if (window.monthlyChartInstance) {
+                window.monthlyChartInstance.destroy();
+            }
+            window.monthlyChartInstance = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: sortedMonths,
+                    datasets: [{ label: "Total Sales Amount", data: totalSales, backgroundColor: "#f7a568" }]
+                }
+            });
+        }
+        fetchData();
+    </script>
+</body>
+</html>
