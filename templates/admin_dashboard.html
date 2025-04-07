@@ -3,65 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MongoDB Dashboard</title>
+    <title>MongoDB Sales Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        h2, h3 {
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #f39c12;
+            --light-bg: #f5f7fa;
+            --dark-bg: #2c3e50;
+            --text-color: #333;
+            --light-text: #fff;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --card-bg: #fff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .filter-section {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .filter-section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+
+        .filter-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .filter-container select {
+            padding: 10px 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            background-color: #fff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            width: 100%;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .filter-container select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1100px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .chart-header {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .chart-header h3 {
+            font-size: 18px;
+            color: var(--secondary-color);
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .chart-body {
+            height: 300px;
+            position: relative;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        .data-summary {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .summary-card {
+            flex: 1;
+            min-width: 200px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--light-text);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
         }
-        .filter-container {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px;
-            flex-wrap: wrap;
+
+        .summary-card:nth-child(2) {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
         }
-        .filter-container select {
-            padding: 8px;
+
+        .summary-card:nth-child(3) {
+            background: linear-gradient(135deg, var(--accent-color), #e67e22);
+        }
+
+        .summary-card h4 {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .filter-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .data-summary {
+                flex-direction: column;
+            }
+        }
+
+        .refresh-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
             font-size: 14px;
+            transition: background-color 0.3s ease;
         }
-        .chart-container {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            margin: 20px 0;
+
+        .refresh-button:hover {
+            background-color: #2980b9;
         }
-        .chart-box {
-            width: 45%;
+
+        footer {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <h2>Sales Dashboard</h2>
-    <div class="filter-container">
-        <select id="orderNumber"><option value="">Select Order Number</option></select>
-        <select id="orderDay"><option value="">Select Order Day</option></select>
-        <select id="orderMonth"><option value="">Select Order Month</option></select>
-        <select id="orderYear"><option value="">Select Order Year</option></select>
-        <select id="productName"><option value="">Select Product Name</option></select>
-        <select id="uom"><option value="">Select UOM</option></select>
+    <header>
+        <div class="header-content">
+            <h1>Sales Analytics Dashboard</h1>
+            <button id="refreshData" class="refresh-button">Refresh Data</button>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="filter-section">
+            <h2>Filter Sales Data</h2>
+            <div class="filter-container">
+                <select id="orderNumber"><option value="">All Order Numbers</option></select>
+                <select id="orderDay"><option value="">All Days</option></select>
+                <select id="orderMonth"><option value="">All Months</option></select>
+                <select id="orderYear"><option value="">All Years</option></select>
+                <select id="productName"><option value="">All Products</option></select>
+                <select id="uom"><option value="">All UOMs</option></select>
+            </div>
+        </div>
+
+        <div class="data-summary">
+            <div class="summary-card">
+                <h4>Total Sales Amount</h4>
+                <div id="totalSales" class="summary-value">$0</div>
+            </div>
+            <div class="summary-card">
+                <h4>Total Orders</h4>
+                <div id="totalOrders" class="summary-value">0</div>
+            </div>
+            <div class="summary-card">
+                <h4>Unique Products</h4>
+                <div id="uniqueProducts" class="summary-value">0</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Top 5 Products by Sales</h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="topSalesChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Least 5 Products by Sales</h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="leastSalesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Monthly Sales Trend</h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="monthlySalesChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Category Distribution</h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="chart-container">
-        <div class="chart-box">
-            <h3>Top 5 Product Ordered</h3>
-            <canvas id="topSalesChart"></canvas>
-        </div>
-        <div class="chart-box">
-            <h3>Least 5 Product Ordered</h3>
-            <canvas id="leastSalesChart"></canvas>
-        </div>
-    </div>
-
-    <div class="chart-container">
-        <div class="chart-box">
-            <h3>Monthly Total Ordering</h3>
-            <canvas id="monthlySalesChart"></canvas>
-        </div>
-        <div class="chart-box">
-            <h3>Category-wise Sales</h3>
-            <canvas id="categoryChart"></canvas>
-        </div>
-    </div>
+    <footer>
+        <p>MongoDB Sales Dashboard © 2025 | Data refreshed: <span id="lastUpdated">Now</span></p>
+    </footer>
 
     <script>
         let allData = [];
@@ -70,26 +321,52 @@
             return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
         }
 
+        function formatCurrency(amount) {
+            return '$' + parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
         async function fetchData() {
-            const response = await fetch("/api/data");
-            allData = await response.json();
-            populateDropdown("orderNumber", [...new Set(allData.map(item => item["Order Number"]))]);
-            populateDropdown("orderDay", [...new Set(allData.map(item => new Date(item["Order Date"]).getDate()))]);
-            populateDropdown("orderMonth", [...new Set(allData.map(item => getMonthName(new Date(item["Order Date"]).getMonth())))]);
-            populateDropdown("orderYear", [...new Set(allData.map(item => new Date(item["Order Date"]).getFullYear()))]);
-            populateDropdown("productName", [...new Set(allData.map(item => item["Product Name"]))]);
-            populateDropdown("uom", [...new Set(allData.map(item => item["UOM"]))]);
-            updateCharts();
+            try {
+                const response = await fetch("/api/data");
+                allData = await response.json();
+                
+                // Update last refreshed time
+                document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString();
+                
+                // Populate dropdowns
+                populateDropdown("orderNumber", [...new Set(allData.map(item => item["Order Number"]))]);
+                populateDropdown("orderDay", [...new Set(allData.map(item => new Date(item["Order Date"]).getDate()))]);
+                populateDropdown("orderMonth", [...new Set(allData.map(item => getMonthName(new Date(item["Order Date"]).getMonth())))]);
+                populateDropdown("orderYear", [...new Set(allData.map(item => new Date(item["Order Date"]).getFullYear()))]);
+                populateDropdown("productName", [...new Set(allData.map(item => item["Product Name"]))]);
+                populateDropdown("uom", [...new Set(allData.map(item => item["UOM"]))]);
+                
+                updateCharts();
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                alert("Failed to load data. Please try again later.");
+            }
         }
 
         function populateDropdown(id, values) {
             const dropdown = document.getElementById(id);
-            values.sort((a, b) => a - b).forEach(value => {
+            // Clear all options except the first one
+            while (dropdown.options.length > 1) {
+                dropdown.remove(1);
+            }
+            
+            values.sort((a, b) => {
+                if (typeof a === 'string' && typeof b === 'string') {
+                    return a.localeCompare(b);
+                }
+                return a - b;
+            }).forEach(value => {
                 const option = document.createElement("option");
                 option.textContent = value;
                 option.value = value;
                 dropdown.appendChild(option);
             });
+            
             dropdown.addEventListener("change", updateCharts);
         }
 
@@ -105,9 +382,25 @@
                     (!document.getElementById("uom").value || item["UOM"] === document.getElementById("uom").value)
                 );
             });
+            
+            updateSummaryCards(filteredData);
             renderProductCharts(filteredData);
             renderMonthlyChart(filteredData);
             renderCategoryChart(filteredData);
+        }
+
+        function updateSummaryCards(data) {
+            // Calculate total sales
+            const totalSales = data.reduce((sum, item) => sum + item.Amount, 0);
+            document.getElementById("totalSales").textContent = formatCurrency(totalSales);
+            
+            // Calculate unique orders
+            const uniqueOrders = new Set(data.map(item => item["Order Number"])).size;
+            document.getElementById("totalOrders").textContent = uniqueOrders;
+            
+            // Calculate unique products
+            const uniqueProducts = new Set(data.map(item => item["Product Name"])).size;
+            document.getElementById("uniqueProducts").textContent = uniqueProducts;
         }
 
         function renderProductCharts(data) {
@@ -116,10 +409,30 @@
                 const productName = item["Product Name"];
                 productSales[productName] = (productSales[productName] || 0) + item.Amount;
             });
-            const productArray = Object.keys(productSales).map(productName => ({ productName, totalSales: productSales[productName] }));
+            
+            const productArray = Object.keys(productSales).map(productName => ({
+                productName: productName.length > 20 ? productName.substring(0, 20) + '...' : productName,
+                fullName: productName,
+                totalSales: productSales[productName]
+            }));
+            
             const sortedProducts = productArray.sort((a, b) => b.totalSales - a.totalSales);
-            renderChart("topSalesChart", sortedProducts.slice(0, 5), "#33b5fb");
-            renderChart("leastSalesChart", sortedProducts.slice(-5), "#ff6b6b");
+            
+            renderChart("topSalesChart", sortedProducts.slice(0, 5), [
+                'rgba(52, 152, 219, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(32, 132, 199, 0.8)',
+                'rgba(42, 142, 209, 0.8)'
+            ]);
+            
+            renderChart("leastSalesChart", sortedProducts.slice(-5).reverse(), [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(255, 159, 64, 0.8)',
+                'rgba(255, 205, 86, 0.8)',
+                'rgba(245, 109, 122, 0.8)',
+                'rgba(235, 149, 54, 0.8)'
+            ]);
         }
 
         function renderMonthlyChart(data) {
@@ -129,15 +442,66 @@
                 const monthYear = getMonthName(orderDate.getMonth()) + " " + orderDate.getFullYear();
                 monthlySales[monthYear] = (monthlySales[monthYear] || 0) + item.Amount;
             });
-            const sortedMonths = Object.keys(monthlySales).sort();
+            
+            // Sort months chronologically
+            const sortedMonths = Object.keys(monthlySales).sort((a, b) => {
+                const [aMonth, aYear] = a.split(' ');
+                const [bMonth, bYear] = b.split(' ');
+                
+                if (aYear !== bYear) {
+                    return parseInt(aYear) - parseInt(bYear);
+                }
+                
+                const monthOrder = {"Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5, 
+                                  "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11};
+                return monthOrder[aMonth] - monthOrder[bMonth];
+            });
+            
             const totalSales = sortedMonths.map(month => monthlySales[month]);
             const ctx = document.getElementById("monthlySalesChart").getContext("2d");
-            if (window.monthlyChartInstance) window.monthlyChartInstance.destroy();
+            
+            if (window.monthlyChartInstance) {
+                window.monthlyChartInstance.destroy();
+            }
+            
             window.monthlyChartInstance = new Chart(ctx, {
-                type: "bar",
+                type: "line",
                 data: {
                     labels: sortedMonths,
-                    datasets: [{ label: "Total Sales Amount", data: totalSales, backgroundColor: "#f7a568" }]
+                    datasets: [{
+                        label: "Monthly Sales",
+                        data: totalSales,
+                        backgroundColor: 'rgba(243, 156, 18, 0.2)',
+                        borderColor: 'rgba(243, 156, 18, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(243, 156, 18, 1)',
+                        pointRadius: 4,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Sales: ' + formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -145,37 +509,132 @@
         function renderCategoryChart(data) {
             const categorySales = {};
             data.forEach(item => {
-                const category = item.Category || "Unknown";
+                const category = item.Category || "Uncategorized";
                 categorySales[category] = (categorySales[category] || 0) + item.Amount;
             });
+            
             const categories = Object.keys(categorySales);
             const values = categories.map(cat => categorySales[cat]);
-            const colors = categories.map(() => '#' + Math.floor(Math.random()*16777215).toString(16));
+            
+            // Generate pleasant color palette
+            const colors = [
+                'rgba(52, 152, 219, 0.8)',    // Blue
+                'rgba(46, 204, 113, 0.8)',    // Green
+                'rgba(155, 89, 182, 0.8)',    // Purple
+                'rgba(52, 73, 94, 0.8)',      // Dark Blue
+                'rgba(243, 156, 18, 0.8)',    // Orange
+                'rgba(231, 76, 60, 0.8)',     // Red
+                'rgba(26, 188, 156, 0.8)'     // Turquoise
+            ];
+            
+            // Create colors array that matches the number of categories
+            const finalColors = categories.map((_, index) => colors[index % colors.length]);
+            
             const ctx = document.getElementById("categoryChart").getContext("2d");
-            if (window.categoryChartInstance) window.categoryChartInstance.destroy();
+            
+            if (window.categoryChartInstance) {
+                window.categoryChartInstance.destroy();
+            }
+            
             window.categoryChartInstance = new Chart(ctx, {
-                type: "pie",
+                type: "doughnut",
                 data: {
                     labels: categories,
-                    datasets: [{ label: "Category Sales", data: values, backgroundColor: colors }]
+                    datasets: [{
+                        label: "Category Sales",
+                        data: values,
+                        backgroundColor: finalColors,
+                        borderColor: 'rgba(255, 255, 255, 0.8)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${formatCurrency(value)} (${percentage}%)`;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 15,
+                                padding: 15
+                            }
+                        }
+                    }
                 }
             });
         }
 
-        function renderChart(canvasId, data, color) {
+        function renderChart(canvasId, data, colors) {
             const ctx = document.getElementById(canvasId).getContext("2d");
-            if (window[canvasId + "Instance"]) window[canvasId + "Instance"].destroy();
+            
+            if (window[canvasId + "Instance"]) {
+                window[canvasId + "Instance"].destroy();
+            }
+            
             window[canvasId + "Instance"] = new Chart(ctx, {
                 type: "bar",
                 data: {
                     labels: data.map(item => item.productName),
-                    datasets: [{ label: "Sales Amount", data: data.map(item => item.totalSales), backgroundColor: color }]
+                    datasets: [{
+                        label: "Sales Amount",
+                        data: data.map(item => item.totalSales),
+                        backgroundColor: colors,
+                        borderColor: colors.map(color => color.replace('0.8', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    // Show full product name in tooltip
+                                    const index = context[0].dataIndex;
+                                    return data[index].fullName || data[index].productName;
+                                },
+                                label: function(context) {
+                                    return 'Sales: ' + formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
                 }
             });
         }
 
+        // Add event listener for refresh button
+        document.getElementById("refreshData").addEventListener("click", fetchData);
+
+        // Initial data load
         fetchData();
     </script>
 </body>
 </html>
- 
