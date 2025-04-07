@@ -43,23 +43,33 @@
 
     <div class="chart-container">
         <div class="chart-box">
-            <h3>Top 5 Product Sales</h3>
+            <h3>Top 5 Product Ordered</h3>
             <canvas id="topSalesChart"></canvas>
         </div>
         <div class="chart-box">
-            <h3>Least 5 Product Sales</h3>
+            <h3>Least 5 Product Ordered</h3>
             <canvas id="leastSalesChart"></canvas>
         </div>
     </div>
 
-    <h3>Monthly Total Sales</h3>
-    <canvas id="monthlySalesChart"></canvas>
+    <div class="chart-container">
+        <div class="chart-box">
+            <h3>Monthly Total Ordering</h3>
+            <canvas id="monthlySalesChart"></canvas>
+        </div>
+        <div class="chart-box">
+            <h3>Category-wise Sales</h3>
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
 
     <script>
         let allData = [];
+
         function getMonthName(monthIndex) {
             return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
         }
+
         async function fetchData() {
             const response = await fetch("/api/data");
             allData = await response.json();
@@ -71,6 +81,7 @@
             populateDropdown("uom", [...new Set(allData.map(item => item["UOM"]))]);
             updateCharts();
         }
+
         function populateDropdown(id, values) {
             const dropdown = document.getElementById(id);
             values.sort((a, b) => a - b).forEach(value => {
@@ -81,6 +92,7 @@
             });
             dropdown.addEventListener("change", updateCharts);
         }
+
         function updateCharts() {
             let filteredData = allData.filter(item => {
                 const orderDate = new Date(item["Order Date"]);
@@ -95,7 +107,9 @@
             });
             renderProductCharts(filteredData);
             renderMonthlyChart(filteredData);
+            renderCategoryChart(filteredData);
         }
+
         function renderProductCharts(data) {
             const productSales = {};
             data.forEach(item => {
@@ -104,24 +118,10 @@
             });
             const productArray = Object.keys(productSales).map(productName => ({ productName, totalSales: productSales[productName] }));
             const sortedProducts = productArray.sort((a, b) => b.totalSales - a.totalSales);
-            const top5 = sortedProducts.slice(0, 5);
-            const least5 = sortedProducts.slice(-5);
-            renderChart("topSalesChart", top5, "#33b5fb");
-            renderChart("leastSalesChart", least5, "#ff6b6b");
+            renderChart("topSalesChart", sortedProducts.slice(0, 5), "#33b5fb");
+            renderChart("leastSalesChart", sortedProducts.slice(-5), "#ff6b6b");
         }
-        function renderChart(canvasId, data, color) {
-            const ctx = document.getElementById(canvasId).getContext("2d");
-            if (window[canvasId + "Instance"]) {
-                window[canvasId + "Instance"].destroy();
-            }
-            window[canvasId + "Instance"] = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: data.map(item => item.productName),
-                    datasets: [{ label: "Sales Amount", data: data.map(item => item.totalSales), backgroundColor: color }]
-                }
-            });
-        }
+
         function renderMonthlyChart(data) {
             const monthlySales = {};
             data.forEach(item => {
@@ -132,9 +132,7 @@
             const sortedMonths = Object.keys(monthlySales).sort();
             const totalSales = sortedMonths.map(month => monthlySales[month]);
             const ctx = document.getElementById("monthlySalesChart").getContext("2d");
-            if (window.monthlyChartInstance) {
-                window.monthlyChartInstance.destroy();
-            }
+            if (window.monthlyChartInstance) window.monthlyChartInstance.destroy();
             window.monthlyChartInstance = new Chart(ctx, {
                 type: "bar",
                 data: {
@@ -143,7 +141,41 @@
                 }
             });
         }
+
+        function renderCategoryChart(data) {
+            const categorySales = {};
+            data.forEach(item => {
+                const category = item.Category || "Unknown";
+                categorySales[category] = (categorySales[category] || 0) + item.Amount;
+            });
+            const categories = Object.keys(categorySales);
+            const values = categories.map(cat => categorySales[cat]);
+            const colors = categories.map(() => '#' + Math.floor(Math.random()*16777215).toString(16));
+            const ctx = document.getElementById("categoryChart").getContext("2d");
+            if (window.categoryChartInstance) window.categoryChartInstance.destroy();
+            window.categoryChartInstance = new Chart(ctx, {
+                type: "pie",
+                data: {
+                    labels: categories,
+                    datasets: [{ label: "Category Sales", data: values, backgroundColor: colors }]
+                }
+            });
+        }
+
+        function renderChart(canvasId, data, color) {
+            const ctx = document.getElementById(canvasId).getContext("2d");
+            if (window[canvasId + "Instance"]) window[canvasId + "Instance"].destroy();
+            window[canvasId + "Instance"] = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: data.map(item => item.productName),
+                    datasets: [{ label: "Sales Amount", data: data.map(item => item.totalSales), backgroundColor: color }]
+                }
+            });
+        }
+
         fetchData();
     </script>
 </body>
 </html>
+ 
