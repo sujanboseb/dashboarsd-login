@@ -1,20 +1,731 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        .container { padding: 20px; }
-        a { text-decoration: none; color: white; background: red; padding: 10px; border-radius: 5px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stock Management Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --secondary: #3f37c9;
+      --success: #4cc9f0;
+      --danger: #f72585;
+      --warning: #f8961e;
+      --info: #4895ef;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --gray-light: #f1f3f5;
+      --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, sans-serif;
+      background-color: #f5f7fa;
+      color: var(--dark);
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+    }
+    
+    /* Top Header Bar */
+    .top-header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .dashboard-title {
+      display: flex;
+      align-items: center;
+    }
+    
+    .dashboard-title h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+    }
+    
+    .dashboard-title div {
+      margin-left: 1rem;
+      opacity: 0.85;
+    }
+    
+    /* Main Content */
+    .main-content {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .page-header {
+      margin-bottom: 2rem;
+    }
+    
+    .page-header h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 0.5rem;
+    }
+    
+    .page-header p {
+      color: var(--gray);
+      font-size: 1rem;
+    }
+    
+    /* KPI Cards */
+    .kpi-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .kpi-box {
+      background-color: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: var(--box-shadow);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+    }
+    
+    .kpi-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+    
+    .kpi-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      font-size: 1.5rem;
+    }
+    
+    .kpi-icon.total {
+      background-color: rgba(67, 97, 238, 0.1);
+      color: var(--primary);
+    }
+    
+    .kpi-icon.low {
+      background-color: rgba(247, 37, 133, 0.1);
+      color: var(--danger);
+    }
+    
+    .kpi-icon.reorder {
+      background-color: rgba(248, 150, 30, 0.1);
+      color: var(--warning);
+    }
+    
+    .kpi-icon.fast {
+      background-color: rgba(76, 201, 240, 0.1);
+      color: var(--success);
+    }
+    
+    .kpi-content h3 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      color: var(--dark);
+    }
+    
+    .kpi-content p {
+      font-size: 0.875rem;
+      color: var(--gray);
+      margin: 0;
+    }
+    
+    /* Charts Section */
+    .charts-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .chart-box {
+      background-color: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: var(--box-shadow);
+      position: relative;
+      height: 350px;
+    }
+    
+    .chart-canvas {
+      width: 100%;
+      height: 100%;
+    }
+    
+    @media (max-width: 1200px) {
+      .charts-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Table Section */
+    .table-container {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    
+    .table-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--gray-light);
+    }
+    
+    .table-header h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin: 0;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    thead th {
+      background-color: var(--gray-light);
+      color: var(--dark);
+      font-weight: 600;
+      text-align: left;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+    
+    tbody td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #edf0f7;
+      color: var(--dark);
+    }
+    
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+    
+    tbody tr:hover {
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    
+    /* Footer */
+    .footer {
+      margin-top: 2rem;
+      text-align: center;
+      color: var(--gray);
+      font-size: 0.875rem;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .top-header {
+        flex-direction: column;
+        padding: 1rem;
+        text-align: center;
+      }
+      
+      .dashboard-title {
+        margin-bottom: 1rem;
+        flex-direction: column;
+      }
+      
+      .dashboard-title div {
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+    }
+    
+    /* Utilities */
+    .btn {
+      display: inline-block;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+    }
+    
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: #e01e71;
+    }
+    
+    .mt-3 {
+      margin-top: 1.5rem;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome, User!</h1>
-        <p>This is your user dashboard where you can view your purchases and track your account.</p>
-        <a href="{{ url_for('logout') }}">Logout</a>
+  <!-- Top Header Bar -->
+  <div class="top-header">
+    <div class="dashboard-title">
+      <h2>Stock Manager</h2>
+      <div>Inventory Dashboard</div>
     </div>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <h1>Welcome to Your Stock Dashboard</h1>
+      <p>Here's your inventory at a glance. Real-time analytics and insights.</p>
+    </div>
+    
+    <!-- KPI Cards -->
+    <div class="kpi-container">
+      <div class="kpi-box">
+        <div class="kpi-icon total">
+          <i class="fas fa-cubes"></i>
+        </div>
+        <div class="kpi-content">
+          <h3 id="total-stock">0</h3>
+          <p>Total Quantity in Stock</p>
+        </div>
+      </div>
+      
+      <div class="kpi-box">
+        <div class="kpi-icon low">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="kpi-content">
+          <h3 id="low-stock">0</h3>
+          <p>Low Stock Products</p>
+        </div>
+      </div>
+      
+      <div class="kpi-box">
+        <div class="kpi-icon reorder">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="kpi-content">
+          <h3 id="reorder">0</h3>
+          <p>Products Needing Reorder</p>
+        </div>
+      </div>
+      
+      <div class="kpi-box">
+        <div class="kpi-icon fast">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div class="kpi-content">
+          <h3 id="fast-moving">0</h3>
+          <p>Fast Moving Products</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="charts-container">
+      <div class="chart-box">
+        <canvas id="stockStatusChart" class="chart-canvas"></canvas>
+      </div>
+      
+      <div class="chart-box">
+        <canvas id="categoryChart" class="chart-canvas"></canvas>
+      </div>
+    </div>
+    
+    <div class="charts-container">
+      <div class="chart-box">
+        <canvas id="reorderVsStockChart" class="chart-canvas"></canvas>
+      </div>
+      
+      <div class="chart-box">
+        <canvas id="preferredVsActualChart" class="chart-canvas"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-box" style="margin-bottom: 2rem; height: 350px;">
+      <canvas id="stockValueChart" class="chart-canvas"></canvas>
+    </div>
+    
+    <!-- Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2>Fast Moving Products</h2>
+      </div>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody id="fastProductTableBody"></tbody>
+      </table>
+    </div>
+    
+    <div class="footer">
+      <p>&copy; 2025 Stock Management System. All rights reserved.</p>
+    </div>
+  </div>
+
+  <script>
+    async function loadData() {
+      try {
+        const response = await fetch("/api/data");
+        const data = await response.json();
+
+        // KPI Metrics
+        let totalQuantity = 0;
+        let lowStockCount = 0;
+        let reorderCount = 0;
+        let fastMovingCount = 0;
+        let stockStatusCount = {};
+        let categoryQuantities = {};
+        let reorderVsStock = [];
+        let preferredVsActual = [];
+        let fastProducts = [];
+        let stockValueTop = [];
+
+        data.forEach(item => {
+          const qty = parseFloat(item["Quantity in Stock"]) || 0;
+          totalQuantity += qty;
+
+          if (item["Stock Status"] === "Low") lowStockCount++;
+          if (qty < (item["Reorder Level"] || 0)) reorderCount++;
+          if (item["Remarks"] === "Fast Moving") {
+            fastMovingCount++;
+            fastProducts.push(item);
+          }
+
+          // Stock Status Chart
+          const status = item["Stock Status"] || "Unknown";
+          stockStatusCount[status] = (stockStatusCount[status] || 0) + 1;
+
+          // Category-wise Chart
+          const cat = item["Category"] || "Uncategorized";
+          categoryQuantities[cat] = (categoryQuantities[cat] || 0) + qty;
+
+          // Reorder vs Stock
+          reorderVsStock.push({
+            name: item["Product Name"] || "Unknown Product",
+            stock: qty,
+            reorder: item["Reorder Level"] || 0
+          });
+
+          // Preferred vs Actual
+          preferredVsActual.push({
+            name: item["Product Name"] || "Unknown Product",
+            preferred: item["Preferred Stock Level"] || 0,
+            actual: qty
+          });
+
+          // Stock Value chart
+          stockValueTop.push({
+            name: item["Product Name"] || "Unknown Product",
+            value: parseFloat(item["Stock Value"]) || 0
+          });
+        });
+
+        document.getElementById("total-stock").textContent = totalQuantity.toLocaleString();
+        document.getElementById("low-stock").textContent = lowStockCount.toLocaleString();
+        document.getElementById("reorder").textContent = reorderCount.toLocaleString();
+        document.getElementById("fast-moving").textContent = fastMovingCount.toLocaleString();
+
+        // Fast Products Table
+        const tbody = document.getElementById("fastProductTableBody");
+        tbody.innerHTML = ""; // Clear existing content
+        
+        if (fastProducts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="text-center">No fast-moving products found</td></tr>';
+        } else {
+          fastProducts.forEach(p => {
+            const row = `<tr>
+              <td>${p["Product Name"]}</td>
+              <td>${parseFloat(p["Quantity in Stock"]).toLocaleString()}</td>
+              <td>${p["Category"]}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+          });
+        }
+
+        // Common chart configuration
+        Chart.defaults.font.family = "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif";
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = "#6c757d";
+        
+        // Chart 1: Stock Status
+        const stockStatusCtx = document.getElementById("stockStatusChart").getContext("2d");
+        new Chart(stockStatusCtx, {
+          type: "pie",
+          data: {
+            labels: Object.keys(stockStatusCount),
+            datasets: [{
+              data: Object.values(stockStatusCount),
+              backgroundColor: ["#4361ee", "#f72585", "#f8961e"],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  boxWidth: 12,
+                  padding: 15
+                }
+              },
+              title: {
+                display: true,
+                text: "Stock Status Distribution",
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                padding: {
+                  bottom: 20
+                }
+              }
+            }
+          }
+        });
+
+        // Chart 2: Category-wise Stock
+        const categoryCtx = document.getElementById("categoryChart").getContext("2d");
+        new Chart(categoryCtx, {
+          type: "bar",
+          data: {
+            labels: Object.keys(categoryQuantities),
+            datasets: [{
+              label: "Stock Quantity",
+              data: Object.values(categoryQuantities),
+              backgroundColor: "#4895ef",
+              borderRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  boxWidth: 12,
+                  padding: 15
+                }
+              },
+              title: {
+                display: true,
+                text: "Category-wise Stock",
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                padding: {
+                  bottom: 20
+                }
+              }
+            }
+          }
+        });
+
+        // Chart 3: Reorder vs Stock (Top 10)
+        reorderVsStock.sort((a, b) => b.stock - a.stock);
+        const top10ReorderVsStock = reorderVsStock.slice(0, 10);
+        
+        const reorderVsStockCtx = document.getElementById("reorderVsStockChart").getContext("2d");
+        new Chart(reorderVsStockCtx, {
+          type: "bar",
+          data: {
+            labels: top10ReorderVsStock.map(p => p.name),
+            datasets: [
+              {
+                label: "Reorder Level",
+                data: top10ReorderVsStock.map(p => p.reorder),
+                backgroundColor: "#f8961e",
+                borderRadius: 5
+              },
+              {
+                label: "Current Stock",
+                data: top10ReorderVsStock.map(p => p.stock),
+                backgroundColor: "#4361ee",
+                borderRadius: 5
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  boxWidth: 12,
+                  padding: 15
+                }
+              },
+              title: {
+                display: true,
+                text: "Top 10 Products: Reorder Level vs Current Stock",
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                padding: {
+                  bottom: 20
+                }
+              }
+            }
+          }
+        });
+
+        // Chart 4: Preferred vs Actual Stock (Top 10)
+        preferredVsActual.sort((a, b) => b.preferred - a.preferred);
+        const top10PreferredVsActual = preferredVsActual.slice(0, 10);
+        
+        const preferredVsActualCtx = document.getElementById("preferredVsActualChart").getContext("2d");
+        new Chart(preferredVsActualCtx, {
+          type: "line",
+          data: {
+            labels: top10PreferredVsActual.map(p => p.name),
+            datasets: [
+              {
+                label: "Preferred",
+                data: top10PreferredVsActual.map(p => p.preferred),
+                borderColor: "#7209b7",
+                backgroundColor: "rgba(114, 9, 183, 0.1)",
+                borderWidth: 3,
+                tension: 0.3,
+                fill: true
+              },
+              {
+                label: "Actual",
+                data: top10PreferredVsActual.map(p => p.actual),
+                borderColor: "#4cc9f0",
+                backgroundColor: "rgba(76, 201, 240, 0.1)",
+                borderWidth: 3,
+                tension: 0.3,
+                fill: true
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  boxWidth: 12,
+                  padding: 15
+                }
+              },
+              title: {
+                display: true,
+                text: "Top 10 Products: Preferred vs Actual Stock",
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                padding: {
+                  bottom: 20
+                }
+              }
+            }
+          }
+        });
+
+        // Chart 5: Stock Value Top 10
+        stockValueTop.sort((a, b) => b.value - a.value);
+        const top10StockValue = stockValueTop.slice(0, 10);
+        
+        const stockValueCtx = document.getElementById("stockValueChart").getContext("2d");
+        new Chart(stockValueCtx, {
+          type: "bar",
+          data: {
+            labels: top10StockValue.map(p => p.name),
+            datasets: [{
+              label: "Stock Value",
+              data: top10StockValue.map(p => p.value),
+              backgroundColor: "#4361ee",
+              borderRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  boxWidth: 12,
+                  padding: 15
+                }
+              },
+              title: {
+                display: true,
+                text: "Top 10 Products by Stock Value",
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                padding: {
+                  bottom: 20
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return '$' + value.toLocaleString();
+                  }
+                }
+              }
+            }
+          }
+        });
+        
+      } catch (error) {
+        console.error("Error loading data:", error);
+        alert("Failed to load dashboard data. Please check the console for details.");
+      }
+    }
+
+    // Initialize dashboard on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadData();
+    });
+  </script>
 </body>
 </html>
