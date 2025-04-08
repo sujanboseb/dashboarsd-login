@@ -209,8 +209,8 @@
             }
         }
 
-        .refresh-button {
-            background-color: var(--primary-color);
+        .logout-button {
+            background-color: #e74c3c;
             color: white;
             border: none;
             padding: 10px 15px;
@@ -221,8 +221,8 @@
             transition: background-color 0.3s ease;
         }
 
-        .refresh-button:hover {
-            background-color: #2980b9;
+        .logout-button:hover {
+            background-color: #c0392b;
         }
 
         footer {
@@ -239,7 +239,7 @@
     <header>
         <div class="header-content">
             <h1>Sales Analytics Dashboard</h1>
-            <button id="refreshData" class="refresh-button">Refresh Data</button>
+            <button id="logoutButton" class="logout-button">Logout</button>
         </div>
     </header>
 
@@ -630,8 +630,12 @@
             });
         }
 
-        // Add event listener for refresh button
-        document.getElementById("refreshData").addEventListener("click", fetchData);
+        // Add event listener for logout button
+        document.getElementById("logoutButton").addEventListener("click", function() {
+            if (confirm("Are you sure you want to logout?")) {
+                window.location.href = "/logout"; // Redirect to logout endpoint
+            }
+        });
 
         // Initial data load
         fetchData();
