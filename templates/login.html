@@ -5,28 +5,186 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        .container { width: 300px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; margin-top: 100px; }
-        input { width: 100%; padding: 8px; margin: 5px 0; }
-        button { width: 100%; padding: 10px; background: blue; color: white; border: none; cursor: pointer; }
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4caf50;
+            --danger-color: #f44336;
+            --gray-light: #f8f9fa;
+            --gray-medium: #e9ecef;
+            --text-dark: #212529;
+            --text-medium: #495057;
+            --text-light: #6c757d;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gray-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            width: 400px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .login-header {
+            background-color: var(--primary-color);
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        .login-header h2 {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .login-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        
+        .login-form {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-medium);
+            font-size: 0.9rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--gray-medium);
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+        
+        .login-button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .alert-danger {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(244, 67, 54, 0.2);
+        }
+        
+        .alert-success {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+        
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .signup-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Login</h2>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <p style="color: {{ 'red' if category == 'danger' else 'green' }}">{{ message }}</p>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <form method="POST">
-            <input type="text" name="phone" placeholder="Phone Number" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
-        <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
+    <div class="login-container">
+        <div class="login-header">
+            <h2>Welcome Back</h2>
+            <p>Please login to access your dashboard</p>
+        </div>
+        
+        <div class="login-form">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST">
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" id="phone" name="phone" class="form-control" placeholder="Enter your phone number" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="login-button">Sign In</button>
+            </form>
+            
+            <div class="signup-link">
+                Don't have an account? <a href="{{ url_for('signup') }}">Create Account</a>
+            </div>
+        </div>
     </div>
 </body>
 </html>
