@@ -9,17 +9,24 @@
   <style>
     :root {
       --primary: #4361ee;
+      --primary-light: rgba(67, 97, 238, 0.1);
       --secondary: #3f37c9;
       --success: #4cc9f0;
+      --success-light: rgba(76, 201, 240, 0.1);
       --danger: #f72585;
+      --danger-light: rgba(247, 37, 133, 0.1);
       --warning: #f8961e;
+      --warning-light: rgba(248, 150, 30, 0.1);
       --info: #4895ef;
       --light: #f8f9fa;
       --dark: #212529;
       --gray: #6c757d;
       --gray-light: #f1f3f5;
       --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
       --transition: all 0.3s ease;
+      --border-radius: 12px;
+      --card-spacing: 1.5rem;
     }
     
     * {
@@ -37,6 +44,18 @@
       margin: 0;
     }
     
+    /* Layout Structure */
+    .layout-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
     /* Top Header Bar */
     .top-header {
       background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -46,6 +65,9 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     
     .dashboard-title {
@@ -62,13 +84,16 @@
     .dashboard-title div {
       margin-left: 1rem;
       opacity: 0.85;
+      font-weight: 400;
     }
     
     /* Main Content */
     .main-content {
+      flex: 1;
       padding: 2rem;
-      max-width: 1400px;
+      max-width: 1560px;
       margin: 0 auto;
+      width: 100%;
     }
     
     .page-header {
@@ -87,19 +112,52 @@
       font-size: 1rem;
     }
     
+    /* Card Component */
+    .card {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--card-shadow);
+      margin-bottom: var(--card-spacing);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+    
+    .card:hover {
+      box-shadow: var(--box-shadow);
+    }
+    
+    .card-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--gray-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .card-header h5 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--dark);
+    }
+    
+    .card-body {
+      padding: 1.5rem;
+    }
+    
     /* KPI Cards */
     .kpi-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1.5rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
     
     .kpi-box {
       background-color: white;
-      border-radius: 10px;
+      border-radius: var(--border-radius);
       padding: 1.5rem;
-      box-shadow: var(--box-shadow);
+      box-shadow: var(--card-shadow);
       transition: var(--transition);
       display: flex;
       align-items: center;
@@ -107,7 +165,7 @@
     
     .kpi-box:hover {
       transform: translateY(-5px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      box-shadow: var(--box-shadow);
     }
     
     .kpi-icon {
@@ -122,22 +180,22 @@
     }
     
     .kpi-icon.total {
-      background-color: rgba(67, 97, 238, 0.1);
+      background-color: var(--primary-light);
       color: var(--primary);
     }
     
     .kpi-icon.low {
-      background-color: rgba(247, 37, 133, 0.1);
+      background-color: var(--danger-light);
       color: var(--danger);
     }
     
     .kpi-icon.reorder {
-      background-color: rgba(248, 150, 30, 0.1);
+      background-color: var(--warning-light);
       color: var(--warning);
     }
     
     .kpi-icon.fast {
-      background-color: rgba(76, 201, 240, 0.1);
+      background-color: var(--success-light);
       color: var(--success);
     }
     
@@ -154,53 +212,96 @@
       margin: 0;
     }
     
-    /* Charts Section */
-    .charts-container {
+    /* Filter Section */
+    .filter-form {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
     }
     
-    .chart-box {
-      background-color: white;
-      border-radius: 10px;
-      padding: 1.5rem;
-      box-shadow: var(--box-shadow);
-      position: relative;
-      height: 350px;
+    .form-group {
+      margin-bottom: 1rem;
     }
     
-    .chart-canvas {
-      width: 100%;
-      height: 100%;
-    }
-    
-    @media (max-width: 1200px) {
-      .charts-container {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    /* Table Section */
-    .table-container {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: var(--box-shadow);
-      overflow: hidden;
-      margin-bottom: 2rem;
-    }
-    
-    .table-header {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--gray-light);
-    }
-    
-    .table-header h2 {
-      font-size: 1.25rem;
-      font-weight: 600;
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
       color: var(--dark);
-      margin: 0;
+    }
+    
+    .form-control, .form-select {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      transition: var(--transition);
+      background-color: white;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+    }
+    
+    .filter-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    /* Alert Styles */
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    
+    .alert-success {
+      background-color: var(--success-light);
+      color: var(--success);
+      border-left: 4px solid var(--success);
+    }
+    
+    .alert-danger {
+      background-color: var(--danger-light);
+      color: var(--danger);
+      border-left: 4px solid var(--danger);
+    }
+    
+    .alert-warning {
+      background-color: var(--warning-light);
+      color: var(--warning); 
+      border-left: 4px solid var(--warning);
+    }
+    
+    .alert-info {
+      background-color: var(--primary-light);
+      color: var(--info);
+      border-left: 4px solid var(--info);
+    }
+    
+    /* Charts Section */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .chart-wrapper {
+      height: 350px;
+      position: relative;
+    }
+    
+    /* Table Styles */
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     
     table {
@@ -208,57 +309,119 @@
       border-collapse: collapse;
     }
     
-    thead th {
+    table thead th {
       background-color: var(--gray-light);
       color: var(--dark);
       font-weight: 600;
       text-align: left;
       padding: 1rem 1.5rem;
-      border-bottom: 1px solid #dee2e6;
-    }
-    
-    tbody td {
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid #edf0f7;
-      color: var(--dark);
-    }
-    
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-    
-    tbody tr:hover {
-      background-color: rgba(67, 97, 238, 0.05);
-    }
-    
-    /* Footer */
-    .footer {
-      margin-top: 2rem;
-      text-align: center;
-      color: var(--gray);
       font-size: 0.875rem;
     }
     
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .top-header {
-        flex-direction: column;
-        padding: 1rem;
-        text-align: center;
-      }
-      
-      .dashboard-title {
-        margin-bottom: 1rem;
-        flex-direction: column;
-      }
-      
-      .dashboard-title div {
-        margin-left: 0;
-        margin-top: 0.5rem;
-      }
+    table tbody td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--gray-light);
+      color: var(--dark);
+      font-size: 0.875rem;
     }
     
-    /* Utilities */
+    table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    
+    table tbody tr:hover {
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    
+    /* Progress Bar */
+    .progress {
+      height: 6px;
+      background-color: var(--gray-light);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      border-radius: 3px;
+    }
+    
+    .bg-danger {
+      background-color: var(--danger);
+    }
+    
+    .bg-warning {
+      background-color: var(--warning);
+    }
+    
+    .bg-info {
+      background-color: var(--info);
+    }
+    
+    .bg-success {
+      background-color: var(--success);
+    }
+    
+    /* Alerts and Notifications */
+    .alert-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      background-color: white;
+      border-left: 4px solid;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    
+    .alert-item.danger {
+      border-left-color: var(--danger);
+    }
+    
+    .alert-item.warning {
+      border-left-color: var(--warning);
+    }
+    
+    .alert-item.info {
+      border-left-color: var(--info);
+    }
+    
+    .alert-item.success {
+      border-left-color: var(--success);
+    }
+    
+    /* Badge Styles */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .badge-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+    
+    .badge-warning {
+      background-color: var(--warning);
+      color: white;
+    }
+    
+    .badge-info {
+      background-color: var(--info);
+      color: white;
+    }
+    
+    .badge-success {
+      background-color: var(--success);
+      color: white;
+    }
+    
+    /* Buttons */
     .btn {
       display: inline-block;
       padding: 0.5rem 1.25rem;
@@ -268,6 +431,16 @@
       cursor: pointer;
       transition: var(--transition);
       border: none;
+      font-size: 0.9rem;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--secondary);
     }
     
     .btn-danger {
@@ -279,453 +452,1012 @@
       background-color: #e01e71;
     }
     
+    .btn-outline {
+      background-color: white;
+      border: 1px solid #dee2e6;
+      color: var(--gray);
+    }
+    
+    .btn-outline:hover {
+      background-color: var(--gray-light);
+      color: var(--dark);
+    }
+    
+    /* Utilities */
+    .d-flex {
+      display: flex;
+    }
+    
+    .align-items-center {
+      align-items: center;
+    }
+    
+    .justify-content-between {
+      justify-content: space-between;
+    }
+    
+    .flex-grow-1 {
+      flex-grow: 1;
+    }
+    
+    .small {
+      font-size: 0.875rem;
+    }
+    
+    .text-muted {
+      color: var(--gray);
+    }
+    
+    .mb-0 {
+      margin-bottom: 0;
+    }
+    
+    .mb-2 {
+      margin-bottom: 0.5rem;
+    }
+    
+    .mb-3 {
+      margin-bottom: 1rem;
+    }
+    
+    .mb-4 {
+      margin-bottom: 1.5rem;
+    }
+    
+    .mb-5 {
+      margin-bottom: 3rem;
+    }
+    
+    .mt-1 {
+      margin-top: 0.25rem;
+    }
+    
+    .mt-2 {
+      margin-top: 0.5rem;
+    }
+    
     .mt-3 {
+      margin-top: 1rem;
+    }
+    
+    .mt-4 {
       margin-top: 1.5rem;
+    }
+    
+    .ms-3 {
+      margin-left: 1rem;
+    }
+    
+    .text-end {
+      text-align: right;
     }
     
     .text-center {
       text-align: center;
     }
+    
+    /* Footer */
+    .footer {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      text-align: center;
+      color: var(--gray);
+      font-size: 0.875rem;
+      border-top: 1px solid var(--gray-light);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 992px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 1.5rem;
+      }
+      
+      .top-header {
+        flex-direction: column;
+        padding: 1rem;
+        text-align: center;
+      }
+      
+      .dashboard-title {
+        margin-bottom: 1rem;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .dashboard-title div {
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+      
+      .kpi-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .filter-actions {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- Top Header Bar -->
-  <div class="top-header">
-    <div class="dashboard-title">
-      <h2>Stock Manager</h2>
-      <div>Inventory Dashboard</div>
+  <div class="layout-container">
+    <div class="content-wrapper">
+      <!-- Top Header Bar -->
+      <div class="top-header">
+        <div class="dashboard-title">
+          <h2>Stock Manager</h2>
+          <div>Inventory Dashboard</div>
+        </div>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </div>
+      
+      <!-- Main Content -->
+      <div class="main-content">
+        <div class="page-header">
+          <h1>Welcome to Your Stock Dashboard</h1>
+          <p>Here's your inventory at a glance. Real-time analytics and insights.</p>
+        </div>
+        
+        <!-- KPI Cards -->
+        <div class="kpi-container">
+          <div class="kpi-box">
+            <div class="kpi-icon total">
+              <i class="fas fa-cubes"></i>
+            </div>
+            <div class="kpi-content">
+              <h3 id="total-stock">0</h3>
+              <p>Total Quantity in Stock</p>
+            </div>
+          </div>
+          
+          <div class="kpi-box">
+            <div class="kpi-icon low">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="kpi-content">
+              <h3 id="low-stock">0</h3>
+              <p>Low Stock Products</p>
+            </div>
+          </div>
+          
+          <div class="kpi-box">
+            <div class="kpi-icon reorder">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="kpi-content">
+              <h3 id="reorder">0</h3>
+              <p>Products Needing Reorder</p>
+            </div>
+          </div>
+          
+          <div class="kpi-box">
+            <div class="kpi-icon fast">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <div class="kpi-content">
+              <h3 id="fast-moving">0</h3>
+              <p>Fast Moving Products</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Filter Section -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5>Filters</h5>
+          </div>
+          <div class="card-body">
+            <form id="filterForm" class="filter-form">
+              <div class="form-group">
+                <label for="startDate" class="form-label">From Date</label>
+                <input type="date" class="form-control" id="startDate">
+              </div>
+              
+              <div class="form-group">
+                <label for="endDate" class="form-label">To Date</label>
+                <input type="date" class="form-control" id="endDate">
+              </div>
+              
+              <div class="form-group">
+                <label for="categoryFilter" class="form-label">Category</label>
+                <select class="form-select" id="categoryFilter">
+                  <option value="all">All Categories</option>
+                  <!-- Options will be dynamically populated -->
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="stockStatusFilter" class="form-label">Stock Status</label>
+                <select class="form-select" id="stockStatusFilter">
+                  <option value="all">All Statuses</option>
+                  <!-- Options will be dynamically populated -->
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="customerFilter" class="form-label">Customer</label>
+                <select class="form-select" id="customerFilter">
+                  <option value="all">All Customers</option>
+                  <!-- Options will be dynamically populated -->
+                </select>
+              </div>
+              
+              <div class="filter-actions">
+                <button type="button" id="resetFilters" class="btn btn-outline">Reset Filters</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- Inventory Alerts Section -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5>Inventory Alerts</h5>
+          </div>
+          <div class="card-body">
+            <div id="inventoryAlertsContainer">
+              <!-- Sample alert -->
+              <div class="alert-item danger">
+                <div class="flex-grow-1">
+                  <h6 class="mb-0">Sample Product</h6>
+                  <div class="small text-muted">
+                    Current: 5.00 units | Preferred: 25.00 units | Need to order: 20.00 units
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar bg-danger" style="width: 20%"></div>
+                  </div>
+                </div>
+                <div class="ms-3">
+                  <span class="badge badge-danger">20%</span>
+                </div>
+              </div>
+              <!-- Alerts will be dynamically populated -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Monthly Sales Trend Chart -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5>Monthly Sales Trend</h5>
+          </div>
+          <div class="card-body">
+            <div class="chart-wrapper">
+              <canvas id="monthlySalesTrendChart"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Charts Grid - First Row -->
+        <div class="charts-grid">
+          <div class="card">
+            <div class="card-header">
+              <h5>Stock Status Distribution</h5>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrapper">
+                <canvas id="stockStatusChart"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <h5>Category-wise Stock</h5>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrapper">
+                <canvas id="categoryChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Charts Grid - Second Row -->
+        <div class="charts-grid">
+          <div class="card">
+            <div class="card-header">
+              <h5>Reorder Level vs Current Stock</h5>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrapper">
+                <canvas id="reorderVsStockChart"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <h5>Preferred vs Actual Stock</h5>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrapper">
+                <canvas id="preferredVsActualChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Top Products by Stock Value -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5>Top Products by Stock Value</h5>
+          </div>
+          <div class="card-body">
+            <div class="chart-wrapper">
+              <canvas id="stockValueChart"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Customer Order History -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5>Customer Order History</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Orders</th>
+                    <th>Products</th>
+                    <th>Total Value</th>
+                    <th>Last Order</th>
+                  </tr>
+                </thead>
+                <tbody id="customerOrderHistoryBody">
+                  <!-- Data will be dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Fast Moving Products Table -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5>Fast Moving Products</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Category</th>
+                  </tr>
+                </thead>
+                <tbody id="fastProductTableBody">
+                  <!-- Data will be dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+          <p>&copy; 2025 Stock Management System. All rights reserved.</p>
+        </div>
+      </div>
     </div>
-    <a href="{{ url_for('logout') }}" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
   </div>
-  
-  <!-- Main Content -->
-  <div class="main-content">
-    <div class="page-header">
-      <h1>Welcome to Your Stock Dashboard</h1>
-      <p>Here's your inventory at a glance. Real-time analytics and insights.</p>
-    </div>
-    
-    <!-- KPI Cards -->
-    <div class="kpi-container">
-      <div class="kpi-box">
-        <div class="kpi-icon total">
-          <i class="fas fa-cubes"></i>
-        </div>
-        <div class="kpi-content">
-          <h3 id="total-stock">0</h3>
-          <p>Total Quantity in Stock</p>
-        </div>
-      </div>
+</body>
+<script>
+  async function loadData() {
+    try {
+      const response = await fetch("/api/data");
+      const data = await response.json();
       
-      <div class="kpi-box">
-        <div class="kpi-icon low">
-          <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <div class="kpi-content">
-          <h3 id="low-stock">0</h3>
-          <p>Low Stock Products</p>
-        </div>
-      </div>
+      // Store the full dataset for filtering
+      window.fullDataset = data;
       
-      <div class="kpi-box">
-        <div class="kpi-icon reorder">
-          <i class="fas fa-shopping-cart"></i>
-        </div>
-        <div class="kpi-content">
-          <h3 id="reorder">0</h3>
-          <p>Products Needing Reorder</p>
-        </div>
-      </div>
+      // Initialize date range for filtering
+      const dates = data.map(item => new Date(item["Order Date"]));
+      const minDate = dates.length ? new Date(Math.min(...dates)) : new Date();
+      const maxDate = dates.length ? new Date(Math.max(...dates)) : new Date();
       
-      <div class="kpi-box">
-        <div class="kpi-icon fast">
-          <i class="fas fa-bolt"></i>
-        </div>
-        <div class="kpi-content">
-          <h3 id="fast-moving">0</h3>
-          <p>Fast Moving Products</p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Charts -->
-    <div class="charts-container">
-      <div class="chart-box">
-        <canvas id="stockStatusChart" class="chart-canvas"></canvas>
-      </div>
+      // Set date picker min/max values
+      document.getElementById("startDate").value = formatDateForInput(minDate);
+      document.getElementById("startDate").min = formatDateForInput(minDate);
+      document.getElementById("startDate").max = formatDateForInput(maxDate);
       
-      <div class="chart-box">
-        <canvas id="categoryChart" class="chart-canvas"></canvas>
-      </div>
-    </div>
-    
-    <div class="charts-container">
-      <div class="chart-box">
-        <canvas id="reorderVsStockChart" class="chart-canvas"></canvas>
-      </div>
+      document.getElementById("endDate").value = formatDateForInput(maxDate);
+      document.getElementById("endDate").min = formatDateForInput(minDate);
+      document.getElementById("endDate").max = formatDateForInput(maxDate);
       
-      <div class="chart-box">
-        <canvas id="preferredVsActualChart" class="chart-canvas"></canvas>
-      </div>
-    </div>
-    
-    <div class="chart-box" style="margin-bottom: 2rem; height: 350px;">
-      <canvas id="stockValueChart" class="chart-canvas"></canvas>
-    </div>
-    
-    <!-- Table -->
-    <div class="table-container">
-      <div class="table-header">
-        <h2>Fast Moving Products</h2>
-      </div>
+      // Populate category filter options
+      const categories = [...new Set(data.map(item => item["Category"] || "Uncategorized"))];
+      const categorySelect = document.getElementById("categoryFilter");
+      categorySelect.innerHTML = '<option value="all">All Categories</option>';
+      categories.forEach(category => {
+        categorySelect.innerHTML += `<option value="${category}">${category}</option>`;
+      });
       
-      <table>
-        <thead>
-          <tr>
-            <th>Product Name</th>
-            <th>Quantity</th>
-            <th>Category</th>
-          </tr>
-        </thead>
-        <tbody id="fastProductTableBody"></tbody>
-      </table>
-    </div>
-    
-    <div class="footer">
-      <p>&copy; 2025 Stock Management System. All rights reserved.</p>
-    </div>
-  </div>
-
-  <script>
-    async function loadData() {
-      try {
-        const response = await fetch("/api/data");
-        const data = await response.json();
-
-        // KPI Metrics
-        let totalQuantity = 0;
-        let lowStockCount = 0;
-        let reorderCount = 0;
-        let fastMovingCount = 0;
-        let stockStatusCount = {};
-        let categoryQuantities = {};
-        let reorderVsStock = [];
-        let preferredVsActual = [];
-        let fastProducts = [];
-        let stockValueTop = [];
-
-        data.forEach(item => {
-          const qty = parseFloat(item["Quantity in Stock"]) || 0;
-          totalQuantity += qty;
-
-          if (item["Stock Status"] === "Low") lowStockCount++;
-          if (qty < (item["Reorder Level"] || 0)) reorderCount++;
-          if (item["Remarks"] === "Fast Moving") {
-            fastMovingCount++;
-            fastProducts.push(item);
-          }
-
-          // Stock Status Chart
-          const status = item["Stock Status"] || "Unknown";
-          stockStatusCount[status] = (stockStatusCount[status] || 0) + 1;
-
-          // Category-wise Chart
-          const cat = item["Category"] || "Uncategorized";
-          categoryQuantities[cat] = (categoryQuantities[cat] || 0) + qty;
-
-          // Reorder vs Stock
-          reorderVsStock.push({
-            name: item["Product Name"] || "Unknown Product",
-            stock: qty,
-            reorder: item["Reorder Level"] || 0
-          });
-
-          // Preferred vs Actual
-          preferredVsActual.push({
-            name: item["Product Name"] || "Unknown Product",
-            preferred: item["Preferred Stock Level"] || 0,
-            actual: qty
-          });
-
-          // Stock Value chart
-          stockValueTop.push({
-            name: item["Product Name"] || "Unknown Product",
-            value: parseFloat(item["Stock Value"]) || 0
-          });
-        });
-
-        document.getElementById("total-stock").textContent = totalQuantity.toLocaleString();
-        document.getElementById("low-stock").textContent = lowStockCount.toLocaleString();
-        document.getElementById("reorder").textContent = reorderCount.toLocaleString();
-        document.getElementById("fast-moving").textContent = fastMovingCount.toLocaleString();
-
-        // Fast Products Table
-        const tbody = document.getElementById("fastProductTableBody");
-        tbody.innerHTML = ""; // Clear existing content
-        
-        if (fastProducts.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="3" class="text-center">No fast-moving products found</td></tr>';
-        } else {
-          fastProducts.forEach(p => {
-            const row = `<tr>
-              <td>${p["Product Name"]}</td>
-              <td>${parseFloat(p["Quantity in Stock"]).toLocaleString()}</td>
-              <td>${p["Category"]}</td>
-            </tr>`;
-            tbody.innerHTML += row;
-          });
-        }
-
-        // Common chart configuration
-        Chart.defaults.font.family = "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif";
-        Chart.defaults.font.size = 12;
-        Chart.defaults.color = "#6c757d";
-        
-        // Chart 1: Stock Status
-        const stockStatusCtx = document.getElementById("stockStatusChart").getContext("2d");
-        new Chart(stockStatusCtx, {
-          type: "pie",
-          data: {
-            labels: Object.keys(stockStatusCount),
-            datasets: [{
-              data: Object.values(stockStatusCount),
-              backgroundColor: ["#4361ee", "#f72585", "#f8961e"],
-              borderWidth: 0
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  boxWidth: 12,
-                  padding: 15
-                }
-              },
-              title: {
-                display: true,
-                text: "Stock Status Distribution",
-                font: {
-                  size: 16,
-                  weight: 'bold'
-                },
-                padding: {
-                  bottom: 20
-                }
-              }
-            }
-          }
-        });
-
-        // Chart 2: Category-wise Stock
-        const categoryCtx = document.getElementById("categoryChart").getContext("2d");
-        new Chart(categoryCtx, {
-          type: "bar",
-          data: {
-            labels: Object.keys(categoryQuantities),
-            datasets: [{
-              label: "Stock Quantity",
-              data: Object.values(categoryQuantities),
-              backgroundColor: "#4895ef",
-              borderRadius: 5
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  boxWidth: 12,
-                  padding: 15
-                }
-              },
-              title: {
-                display: true,
-                text: "Category-wise Stock",
-                font: {
-                  size: 16,
-                  weight: 'bold'
-                },
-                padding: {
-                  bottom: 20
-                }
-              }
-            }
-          }
-        });
-
-        // Chart 3: Reorder vs Stock (Top 10)
-        reorderVsStock.sort((a, b) => b.stock - a.stock);
-        const top10ReorderVsStock = reorderVsStock.slice(0, 10);
-        
-        const reorderVsStockCtx = document.getElementById("reorderVsStockChart").getContext("2d");
-        new Chart(reorderVsStockCtx, {
-          type: "bar",
-          data: {
-            labels: top10ReorderVsStock.map(p => p.name),
-            datasets: [
-              {
-                label: "Reorder Level",
-                data: top10ReorderVsStock.map(p => p.reorder),
-                backgroundColor: "#f8961e",
-                borderRadius: 5
-              },
-              {
-                label: "Current Stock",
-                data: top10ReorderVsStock.map(p => p.stock),
-                backgroundColor: "#4361ee",
-                borderRadius: 5
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  boxWidth: 12,
-                  padding: 15
-                }
-              },
-              title: {
-                display: true,
-                text: "Top 10 Products: Reorder Level vs Current Stock",
-                font: {
-                  size: 16,
-                  weight: 'bold'
-                },
-                padding: {
-                  bottom: 20
-                }
-              }
-            }
-          }
-        });
-
-        // Chart 4: Preferred vs Actual Stock (Top 10)
-        preferredVsActual.sort((a, b) => b.preferred - a.preferred);
-        const top10PreferredVsActual = preferredVsActual.slice(0, 10);
-        
-        const preferredVsActualCtx = document.getElementById("preferredVsActualChart").getContext("2d");
-        new Chart(preferredVsActualCtx, {
-          type: "line",
-          data: {
-            labels: top10PreferredVsActual.map(p => p.name),
-            datasets: [
-              {
-                label: "Preferred",
-                data: top10PreferredVsActual.map(p => p.preferred),
-                borderColor: "#7209b7",
-                backgroundColor: "rgba(114, 9, 183, 0.1)",
-                borderWidth: 3,
-                tension: 0.3,
-                fill: true
-              },
-              {
-                label: "Actual",
-                data: top10PreferredVsActual.map(p => p.actual),
-                borderColor: "#4cc9f0",
-                backgroundColor: "rgba(76, 201, 240, 0.1)",
-                borderWidth: 3,
-                tension: 0.3,
-                fill: true
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  boxWidth: 12,
-                  padding: 15
-                }
-              },
-              title: {
-                display: true,
-                text: "Top 10 Products: Preferred vs Actual Stock",
-                font: {
-                  size: 16,
-                  weight: 'bold'
-                },
-                padding: {
-                  bottom: 20
-                }
-              }
-            }
-          }
-        });
-
-        // Chart 5: Stock Value Top 10
-        stockValueTop.sort((a, b) => b.value - a.value);
-        const top10StockValue = stockValueTop.slice(0, 10);
-        
-        const stockValueCtx = document.getElementById("stockValueChart").getContext("2d");
-        new Chart(stockValueCtx, {
-          type: "bar",
-          data: {
-            labels: top10StockValue.map(p => p.name),
-            datasets: [{
-              label: "Stock Value",
-              data: top10StockValue.map(p => p.value),
-              backgroundColor: "#4361ee",
-              borderRadius: 5
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  boxWidth: 12,
-                  padding: 15
-                }
-              },
-              title: {
-                display: true,
-                text: "Top 10 Products by Stock Value",
-                font: {
-                  size: 16,
-                  weight: 'bold'
-                },
-                padding: {
-                  bottom: 20
-                }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  callback: function(value) {
-                    return '$' + value.toLocaleString();
-                  }
-                }
-              }
-            }
-          }
-        });
-        
-      } catch (error) {
-        console.error("Error loading data:", error);
-        alert("Failed to load dashboard data. Please check the console for details.");
-      }
+      // Populate stock status filter options
+      const stockStatuses = [...new Set(data.map(item => item["Stock Status"] || "Unknown"))];
+      const statusSelect = document.getElementById("stockStatusFilter");
+      statusSelect.innerHTML = '<option value="all">All Statuses</option>';
+      stockStatuses.forEach(status => {
+        statusSelect.innerHTML += `<option value="${status}">${status}</option>`;
+      });
+      
+      // Populate customer filter options
+      const customers = [...new Set(data.map(item => item["Customer Name"] || "Unknown"))];
+      const customerSelect = document.getElementById("customerFilter");
+      customerSelect.innerHTML = '<option value="all">All Customers</option>';
+      customers.forEach(customer => {
+        customerSelect.innerHTML += `<option value="${customer}">${customer}</option>`;
+      });
+      
+      // Apply initial visualization
+      applyFilters();
+    } catch (error) {
+      console.error("Error loading data:", error);
+      alert("Failed to load dashboard data. Please check the console for details.");
     }
-
-    // Initialize dashboard on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      loadData();
+  }
+  
+  function applyFilters() {
+    const startDate = new Date(document.getElementById("startDate").value);
+    const endDate = new Date(document.getElementById("endDate").value);
+    const category = document.getElementById("categoryFilter").value;
+    const stockStatus = document.getElementById("stockStatusFilter").value;
+    const customer = document.getElementById("customerFilter").value;
+    
+    // Apply filters to the full dataset
+    let filteredData = window.fullDataset.filter(item => {
+      const itemDate = new Date(item["Order Date"]);
+      const matchesDate = itemDate >= startDate && itemDate <= endDate;
+      const matchesCategory = category === "all" || item["Category"] === category;
+      const matchesStatus = stockStatus === "all" || item["Stock Status"] === stockStatus;
+      const matchesCustomer = customer === "all" || item["Customer Name"] === customer;
+      
+      return matchesDate && matchesCategory && matchesStatus && matchesCustomer;
     });
-  </script>
+    
+    // Update the dashboard with filtered data
+    updateDashboard(filteredData);
+  }
+  
+  function formatDateForInput(date) {
+    return date.toISOString().split('T')[0];
+  }
+  
+  function updateDashboard(data) {
+    // KPI Metrics
+    let totalQuantity = 0;
+    let lowStockCount = 0;
+    let reorderCount = 0;
+    let fastMovingCount = 0;
+    let stockStatusCount = {};
+    let categoryQuantities = {};
+    let reorderVsStock = [];
+    let preferredVsActual = [];
+    let fastProducts = [];
+    let stockValueTop = [];
+    let monthlyOrders = {};
+    
+    // For monthly sales trend
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    data.forEach(item => {
+      const qty = parseFloat(item["Quantity in Stock"]) || 0;
+      totalQuantity += qty;
+      
+      if (item["Stock Status"] === "Low") lowStockCount++;
+      if (qty < (item["Reorder Level"] || 0)) reorderCount++;
+      if (item["Remarks"] === "Fast Moving") {
+        fastMovingCount++;
+        fastProducts.push(item);
+      }
+      
+      // Stock Status Chart
+      const status = item["Stock Status"] || "Unknown";
+      stockStatusCount[status] = (stockStatusCount[status] || 0) + 1;
+      
+      // Category-wise Chart
+      const cat = item["Category"] || "Uncategorized";
+      categoryQuantities[cat] = (categoryQuantities[cat] || 0) + qty;
+      
+      // Reorder vs Stock
+      reorderVsStock.push({
+        name: item["Product Name"] || "Unknown Product",
+        stock: qty,
+        reorder: item["Reorder Level"] || 0
+      });
+      
+      // Preferred vs Actual
+      preferredVsActual.push({
+        name: item["Product Name"] || "Unknown Product",
+        preferred: item["Preferred Stock Level"] || 0,
+        actual: qty
+      });
+      
+      // Stock Value chart
+      stockValueTop.push({
+        name: item["Product Name"] || "Unknown Product",
+        value: parseFloat(item["Stock Value"]) || 0
+      });
+      
+      // Monthly Sales Trend
+      if (item["Order Date"]) {
+        const orderDate = new Date(item["Order Date"]);
+        const monthYear = `${monthNames[orderDate.getMonth()]} ${orderDate.getFullYear()}`;
+        const orderQty = parseFloat(item["Quantity"]) || 0;
+        const orderAmount = parseFloat(item["Amount"]) || 0;
+        
+        if (!monthlyOrders[monthYear]) {
+          monthlyOrders[monthYear] = { quantity: 0, amount: 0 };
+        }
+        monthlyOrders[monthYear].quantity += orderQty;
+        monthlyOrders[monthYear].amount += orderAmount;
+      }
+    });
+    
+    // Update KPI cards
+    document.getElementById("total-stock").textContent = totalQuantity.toLocaleString();
+    document.getElementById("low-stock").textContent = lowStockCount.toLocaleString();
+    document.getElementById("reorder").textContent = reorderCount.toLocaleString();
+    document.getElementById("fast-moving").textContent = fastMovingCount.toLocaleString();
+    
+    // Update Inventory Alert Section
+    updateInventoryAlerts(data);
+    
+    // Update Fast Products Table
+    const tbody = document.getElementById("fastProductTableBody");
+    tbody.innerHTML = ""; // Clear existing content
+    
+    if (fastProducts.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" class="text-center">No fast-moving products found</td></tr>';
+    } else {
+      fastProducts.forEach(p => {
+        const row = `<tr>
+          <td>${p["Product Name"]}</td>
+          <td>${parseFloat(p["Quantity in Stock"]).toLocaleString()}</td>
+          <td>${p["Category"]}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+    
+    // Common chart configuration
+    Chart.defaults.font.family = "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = "#6c757d";
+    
+    // Chart 1: Stock Status
+    updateOrCreateChart("stockStatusChart", "pie", {
+      labels: Object.keys(stockStatusCount),
+      datasets: [{
+        data: Object.values(stockStatusCount),
+        backgroundColor: ["#4361ee", "#f72585", "#f8961e"],
+        borderWidth: 0
+      }]
+    }, {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 12, padding: 15 }
+        },
+        title: {
+          display: true,
+          text: "Stock Status Distribution",
+          font: { size: 16, weight: 'bold' },
+          padding: { bottom: 20 }
+        }
+      }
+    });
+    
+    // Chart 2: Category-wise Stock
+    updateOrCreateChart("categoryChart", "bar", {
+      labels: Object.keys(categoryQuantities),
+      datasets: [{
+        label: "Stock Quantity",
+        data: Object.values(categoryQuantities),
+        backgroundColor: "#4895ef",
+        borderRadius: 5
+      }]
+    }, {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 12, padding: 15 }
+        },
+        title: {
+          display: true,
+          text: "Category-wise Stock",
+          font: { size: 16, weight: 'bold' },
+          padding: { bottom: 20 }
+        }
+      }
+    });
+    
+    // Chart 3: Reorder vs Stock (Top 10)
+    reorderVsStock.sort((a, b) => b.stock - a.stock);
+    const top10ReorderVsStock = reorderVsStock.slice(0, 10);
+    
+    updateOrCreateChart("reorderVsStockChart", "bar", {
+      labels: top10ReorderVsStock.map(p => p.name),
+      datasets: [
+        {
+          label: "Reorder Level",
+          data: top10ReorderVsStock.map(p => p.reorder),
+          backgroundColor: "#f8961e",
+          borderRadius: 5
+        },
+        {
+          label: "Current Stock",
+          data: top10ReorderVsStock.map(p => p.stock),
+          backgroundColor: "#4361ee",
+          borderRadius: 5
+        }
+      ]
+    }, {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 12, padding: 15 }
+        },
+        title: {
+          display: true,
+          text: "Top 10 Products: Reorder Level vs Current Stock",
+          font: { size: 16, weight: 'bold' },
+          padding: { bottom: 20 }
+        }
+      }
+    });
+    
+    // Chart 4: Preferred vs Actual Stock (Top 10)
+    preferredVsActual.sort((a, b) => b.preferred - a.preferred);
+    const top10PreferredVsActual = preferredVsActual.slice(0, 10);
+    
+    updateOrCreateChart("preferredVsActualChart", "line", {
+      labels: top10PreferredVsActual.map(p => p.name),
+      datasets: [
+        {
+          label: "Preferred",
+          data: top10PreferredVsActual.map(p => p.preferred),
+          borderColor: "#7209b7",
+          backgroundColor: "rgba(114, 9, 183, 0.1)",
+          borderWidth: 3,
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: "Actual",
+          data: top10PreferredVsActual.map(p => p.actual),
+          borderColor: "#4cc9f0",
+          backgroundColor: "rgba(76, 201, 240, 0.1)",
+          borderWidth: 3,
+          tension: 0.3,
+          fill: true
+        }
+      ]
+    }, {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 12, padding: 15 }
+        },
+        title: {
+          display: true,
+          text: "Top 10 Products: Preferred vs Actual Stock",
+          font: { size: 16, weight: 'bold' },
+          padding: { bottom: 20 }
+        }
+      }
+    });
+    
+    // Chart 5: Stock Value Top 10
+    stockValueTop.sort((a, b) => b.value - a.value);
+    const top10StockValue = stockValueTop.slice(0, 10);
+    
+    updateOrCreateChart("stockValueChart", "bar", {
+      labels: top10StockValue.map(p => p.name),
+      datasets: [{
+        label: "Stock Value",
+        data: top10StockValue.map(p => p.value),
+        backgroundColor: "#4361ee",
+        borderRadius: 5
+      }]
+    }, {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 12, padding: 15 }
+        },
+        title: {
+          display: true,
+          text: "Top 10 Products by Stock Value",
+          font: { size: 16, weight: 'bold' },
+          padding: { bottom: 20 }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '$' + value.toLocaleString();
+            }
+          }
+        }
+      }
+    });
+    
+    // Chart 6: Monthly Sales Trend (New Chart)
+    const monthlyLabels = Object.keys(monthlyOrders).sort((a, b) => {
+      const [aMonth, aYear] = a.split(' ');
+      const [bMonth, bYear] = b.split(' ');
+      return new Date(`${aMonth} 1, ${aYear}`) - new Date(`${bMonth} 1, ${bYear}`);
+    });
+    
+    updateOrCreateChart("monthlySalesTrendChart", "line", {
+      labels: monthlyLabels,
+      datasets: [
+        {
+          label: "Revenue",
+          data: monthlyLabels.map(month => monthlyOrders[month].amount),
+          borderColor: "#4361ee",
+          backgroundColor: "rgba(67, 97, 238, 0.1)",
+          borderWidth: 3,
+          tension: 0.3,
+          fill: true,
+          yAxisID: 'y'
+        },
+        {
+          label: "Quantity",
+          data: monthlyLabels.map(month => monthlyOrders[month].quantity),
+          borderColor: "#f72585",
+          backgroundColor: "rgba(247, 37, 133, 0.1)",
+          borderWidth: 3,
+          tension: 0.3,
+          fill: true,
+          yAxisID: 'y1'
+        }
+      ]
+    }, {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 12, padding: 15 }
+        },
+        title: {
+          display: true,
+          text: "Monthly Sales Trend",
+          font: { size: 16, weight: 'bold' },
+          padding: { bottom: 20 }
+        }
+      },
+      scales: {
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          title: {
+            display: true,
+            text: 'Revenue'
+          },
+          ticks: {
+            callback: function(value) {
+              return '$' + value.toLocaleString();
+            }
+          }
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          grid: {
+            drawOnChartArea: false
+          },
+          title: {
+            display: true,
+            text: 'Quantity'
+          }
+        }
+      }
+    });
+    
+    // Update Customer Order History Table
+    updateCustomerOrderHistory(data);
+  }
+  
+  function updateOrCreateChart(chartId, chartType, chartData, chartOptions) {
+    const chartCanvas = document.getElementById(chartId);
+    const existingChart = Chart.getChart(chartCanvas);
+    
+    if (existingChart) {
+      existingChart.data = chartData;
+      existingChart.options = chartOptions;
+      existingChart.update();
+    } else {
+      const ctx = chartCanvas.getContext("2d");
+      new Chart(ctx, {
+        type: chartType,
+        data: chartData,
+        options: chartOptions
+      });
+    }
+  }
+  
+  function updateInventoryAlerts(data) {
+    const alertsContainer = document.getElementById("inventoryAlertsContainer");
+    
+    if (!alertsContainer) return;
+    
+    alertsContainer.innerHTML = "";
+    
+    // Filter items that need reordering
+    const reorderItems = data.filter(item => {
+      const currentStock = parseFloat(item["Quantity in Stock"]) || 0;
+      const reorderLevel = parseFloat(item["Reorder Level"]) || 0;
+      const preferredLevel = parseFloat(item["Preferred Stock Level"]) || 0;
+      
+      return currentStock < reorderLevel && preferredLevel > 0;
+    });
+    
+    if (reorderItems.length === 0) {
+      alertsContainer.innerHTML = '<div class="alert alert-success">No items currently need reordering.</div>';
+      return;
+    }
+    
+    // Sort by priority (largest gap between preferred and current stock)
+    reorderItems.sort((a, b) => {
+      const gapA = (parseFloat(a["Preferred Stock Level"]) || 0) - (parseFloat(a["Quantity in Stock"]) || 0);
+      const gapB = (parseFloat(b["Preferred Stock Level"]) || 0) - (parseFloat(b["Quantity in Stock"]) || 0);
+      return gapB - gapA;
+    });
+    
+    // Display top 5 items that need reordering
+    const topReorderItems = reorderItems.slice(0, 5);
+    
+    topReorderItems.forEach(item => {
+      const currentStock = parseFloat(item["Quantity in Stock"]) || 0;
+      const preferredLevel = parseFloat(item["Preferred Stock Level"]) || 0;
+      const reorderAmount = preferredLevel - currentStock;
+      const stockPercentage = (currentStock / preferredLevel) * 100;
+      
+      let alertClass = "danger";
+      if (stockPercentage > 50) alertClass = "warning";
+      else if (stockPercentage > 25) alertClass = "info";
+      
+      const alertHtml = `
+        <div class="alert alert-${alertClass} d-flex align-items-center mb-2">
+          <div class="flex-grow-1">
+            <h6 class="mb-0">${item["Product Name"]}</h6>
+            <div class="small text-muted">
+              Current: ${currentStock.toFixed(2)} ${item["UOM"]} | 
+              Preferred: ${preferredLevel.toFixed(2)} ${item["UOM"]} | 
+              Need to order: ${reorderAmount.toFixed(2)} ${item["UOM"]}
+            </div>
+            <div class="progress mt-1" style="height: 6px;">
+              <div class="progress-bar bg-${alertClass}" role="progressbar" 
+                   style="width: ${stockPercentage}%" 
+                   aria-valuenow="${stockPercentage}" 
+                   aria-valuemin="0" 
+                   aria-valuemax="100"></div>
+            </div>
+          </div>
+          <div class="ms-3">
+            <span class="badge bg-${alertClass}">${stockPercentage.toFixed(0)}%</span>
+          </div>
+        </div>
+      `;
+      
+      alertsContainer.innerHTML += alertHtml;
+    });
+  }
+  
+  function updateCustomerOrderHistory(data) {
+    const customerHistoryBody = document.getElementById("customerOrderHistoryBody");
+    
+    if (!customerHistoryBody) return;
+    
+    customerHistoryBody.innerHTML = "";
+    
+    // Group by customer
+    const customerOrders = {};
+    
+    data.forEach(item => {
+      const customer = item["Customer Name"] || "Unknown";
+      
+      if (!customerOrders[customer]) {
+        customerOrders[customer] = {
+          totalOrders: 0,
+          totalAmount: 0,
+          lastOrder: null,
+          products: new Set()
+        };
+      }
+      
+      customerOrders[customer].totalOrders++;
+      customerOrders[customer].totalAmount += parseFloat(item["Amount"]) || 0;
+      customerOrders[customer].products.add(item["Product Name"]);
+      
+      const orderDate = new Date(item["Order Date"]);
+      if (!customerOrders[customer].lastOrder || orderDate > customerOrders[customer].lastOrder) {
+        customerOrders[customer].lastOrder = orderDate;
+      }
+    });
+    
+    // Convert to array and sort by amount
+    const sortedCustomers = Object.keys(customerOrders)
+      .map(customer => ({
+        name: customer,
+        ...customerOrders[customer],
+        productCount: customerOrders[customer].products.size
+      }))
+      .sort((a, b) => b.totalAmount - a.totalAmount);
+    
+    // Display in table
+    sortedCustomers.forEach(customer => {
+      const row = `
+        <tr>
+          <td>${customer.name}</td>
+          <td>${customer.totalOrders}</td>
+          <td>${customer.productCount}</td>
+          <td>$${customer.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          <td>${customer.lastOrder ? customer.lastOrder.toLocaleDateString() : 'Unknown'}</td>
+        </tr>
+      `;
+      customerHistoryBody.innerHTML += row;
+    });
+  }
+  
+  // Initialize dashboard on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    loadData();
+    
+    // Add event listeners for filter changes
+    document.getElementById("startDate").addEventListener("change", applyFilters);
+    document.getElementById("endDate").addEventListener("change", applyFilters);
+    document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+    document.getElementById("stockStatusFilter").addEventListener("change", applyFilters);
+    document.getElementById("customerFilter").addEventListener("change", applyFilters);
+    
+    // Reset button functionality
+    document.getElementById("resetFilters").addEventListener("click", function() {
+      // Reset the filter form
+      document.getElementById("filterForm").reset();
+      
+      // Reset date filters to min/max values
+      const startDate = document.getElementById("startDate");
+      const endDate = document.getElementById("endDate");
+      startDate.value = startDate.min;
+      endDate.value = endDate.max;
+      
+      // Re-apply filters (which will now be reset)
+      applyFilters();
+    });
+  });
+</script>
 </body>
 </html>
