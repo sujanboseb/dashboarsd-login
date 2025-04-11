@@ -91,50 +91,49 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
+        role = request.form["role"]
         email = request.form["email"]
         password = request.form["password"]
-        
-        # Validate email format
-        if not is_valid_email(email):
-            flash("Invalid email format.", "danger")
-            return render_template("login.html")
-        
-        user = users_collection.find_one({"email": email, "password": password})
 
-        if user:
-            session["user"] = email
-            session["role"] = user["role"]
-
-            if user["role"] == "admin":
+        if role == "admin":
+            # Static admin check
+            if (email == "dhaneshwar@email.com" and password == "Dhanesh#@21") or \
+               (email == "sujan@email.com" and password == "Sujan#@21"):
+                session["user"] = email
+                session["role"] = "admin"
                 return redirect(url_for("admin_dashboard"))
             else:
-                return redirect(url_for("user_dashboard"))
+                flash("Invalid admin credentials.", "danger")
         else:
-            flash("Invalid credentials. Please try again.", "danger")
+            # User login
+            user = users_collection.find_one({"email": email, "password": password, "role": "user"})
+            if user:
+                session["user"] = email
+                session["role"] = "user"
+                return redirect(url_for("user_dashboard"))
+            else:
+                flash("Invalid user credentials.", "danger")
 
     return render_template("login.html")
+
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
-        role = request.form["role"]
-
-        # Validate email format
-        if not is_valid_email(email):
-            flash("Invalid email format.", "danger")
-            return render_template("signup.html")
 
         if users_collection.find_one({"email": email}):
             flash("Email already registered.", "danger")
             return redirect(url_for("signup"))
 
-        users_collection.insert_one({"email": email, "password": password, "role": role})
-        flash("Account created successfully! Please log in.", "success")
+        # Always assign "user" role
+        users_collection.insert_one({"email": email, "password": password, "role": "user"})
+        flash("You are successfully registered as a User. Please log in.", "success")
         return redirect(url_for("login"))
 
     return render_template("signup.html")
+
 
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
