@@ -20,9 +20,9 @@ import string
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY")  # Loaded from .env
+app.secret_key = os.getenv("SECRET_KEY", "fallback-secret-key")  # Fallback for safety
 
-# MongoDB connection
+# MongoDB connection - unchanged as per request
 raw_password = "sawq#@21"
 encoded_password = quote_plus(raw_password)
 uri = f"mongodb+srv://sujanboseplant04:{encoded_password}@cluster0.ea3ecul.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
@@ -33,14 +33,15 @@ collection = db["productpurchase"]
 otp_collection = db["otp"]  # Collection to store OTP information
 
 # Email configuration
-GMAIL_USER = os.getenv("GMAIL_USER", "your-email@gmail.com")  # Update your .env file
-GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD", "your-app-password")  # Use app password
+GMAIL_USER = os.getenv("GMAIL_USER", "your-email@gmail.com")
+GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD", "your-app-password")
 
-# Define paths to your saved models
+# Define paths to your saved models - updated for cloud environment
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATHS = {
-    '20g': 'C:\\Users\\Lenovo\\Desktop\\sarima_model_20gm.pkl',  # Update with your actual paths
-    '5kg': 'C:\\Users\\Lenovo\\Desktop\\sarima_model_5kg.pkl',
-    'others': 'C:\\Users\\Lenovo\\Desktop\\sarima_model_others.pkl'
+    '20g': os.path.join(BASE_DIR, 'models', 'sarima_model_20gm.pkl'),
+    '5kg': os.path.join(BASE_DIR, 'models', 'sarima_model_5kg.pkl'),
+    'others': os.path.join(BASE_DIR, 'models', 'sarima_model_others.pkl')
 }
 
 # Email validation regex
@@ -570,5 +571,7 @@ def get_forecast():
         traceback_str = traceback.format_exc()
         return jsonify({"error": f"An error occurred: {str(e)}\n{traceback_str}"}), 500
 
+# Updated port configuration for Render
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
