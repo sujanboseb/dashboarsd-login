@@ -3,13 +3,19 @@ from pymongo import MongoClient
 from urllib.parse import quote_plus
 import os
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 import math
 import pandas as pd
 import numpy as np
 import json
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 import joblib  # For loading the saved models
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import re
+import random
+import string
 
 load_dotenv()
 
@@ -24,6 +30,11 @@ client = MongoClient(uri)
 db = client["investment"]
 users_collection = db["users"]
 collection = db["productpurchase"]
+otp_collection = db["otp"]  # Collection to store OTP information
+
+# Email configuration
+GMAIL_USER = os.getenv("GMAIL_USER", "your-email@gmail.com")  # Update your .env file
+GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD", "your-app-password")  # Use app password
 
 # Define paths to your saved models
 MODEL_PATHS = {
@@ -32,6 +43,47 @@ MODEL_PATHS = {
     'others': 'C:\\Users\\Lenovo\\Desktop\\sarima_model_others.pkl'
 }
 
+# Email validation regex
+def is_valid_email(email):
+    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    return re.match(pattern, email) is not None
+
+# Generate OTP
+def generate_otp():
+    return ''.join(random.choices(string.digits, k=6))
+
+# Send email with OTP
+def send_otp_email(email, otp):
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = GMAIL_USER
+        msg['To'] = email
+        msg['Subject'] = "Password Reset OTP"
+        
+        body = f"""
+        <html>
+        <body>
+            <h2>Password Reset Request</h2>
+            <p>Your OTP for password reset is: <strong>{otp}</strong></p>
+            <p>This OTP is valid for 45 seconds only.</p>
+            <p>If you did not request this, please ignore this email.</p>
+        </body>
+        </html>
+        """
+        
+        msg.attach(MIMEText(body, 'html'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(GMAIL_USER, GMAIL_PASSWORD)
+        text = msg.as_string()
+        server.sendmail(GMAIL_USER, email, text)
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False
+
 @app.route("/")
 def home():
     return redirect(url_for("login"))
@@ -39,12 +91,18 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        phone = request.form["phone"]
+        email = request.form["email"]
         password = request.form["password"]
-        user = users_collection.find_one({"phone": phone, "password": password})
+        
+        # Validate email format
+        if not is_valid_email(email):
+            flash("Invalid email format.", "danger")
+            return render_template("login.html")
+        
+        user = users_collection.find_one({"email": email, "password": password})
 
         if user:
-            session["user"] = phone
+            session["user"] = email
             session["role"] = user["role"]
 
             if user["role"] == "admin":
@@ -59,23 +117,166 @@ def login():
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
-        phone = request.form["phone"]
+        email = request.form["email"]
         password = request.form["password"]
         role = request.form["role"]
 
-        if len(phone) != 10 or not phone.isdigit():
-            flash("Phone number must be 10 digits.", "danger")
+        # Validate email format
+        if not is_valid_email(email):
+            flash("Invalid email format.", "danger")
+            return render_template("signup.html")
+
+        if users_collection.find_one({"email": email}):
+            flash("Email already registered.", "danger")
             return redirect(url_for("signup"))
 
-        if users_collection.find_one({"phone": phone}):
-            flash("Phone number already registered.", "danger")
-            return redirect(url_for("signup"))
-
-        users_collection.insert_one({"phone": phone, "password": password, "role": role})
+        users_collection.insert_one({"email": email, "password": password, "role": role})
         flash("Account created successfully! Please log in.", "success")
         return redirect(url_for("login"))
 
     return render_template("signup.html")
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        email = request.form["email"]
+        
+        # Validate email format
+        if not is_valid_email(email):
+            flash("Invalid email format.", "danger")
+            return render_template("forgot_password.html")
+        
+        # Check if email exists in database
+        user = users_collection.find_one({"email": email})
+        if not user:
+            flash("Email not found in our records.", "danger")
+            return render_template("forgot_password.html")
+        
+        # Generate OTP
+        otp = generate_otp()
+        
+        # Save OTP to database with expiration time (45 seconds from now)
+        expiry_time = datetime.now() + timedelta(seconds=45)
+        
+        # Remove any existing OTP for this email
+        otp_collection.delete_many({"email": email})
+        
+        # Insert new OTP
+        otp_collection.insert_one({
+            "email": email,
+            "otp": otp,
+            "expiry": expiry_time,
+            "role": user["role"]  # Store user role for later redirection
+        })
+        
+        # Send OTP via email
+        if send_otp_email(email, otp):
+            session["reset_email"] = email  # Store email in session for verification
+            return redirect(url_for("verify_otp"))
+        else:
+            flash("Failed to send OTP. Please try again.", "danger")
+    
+    return render_template("forgot_password.html")
+
+@app.route("/verify-otp", methods=["GET", "POST"])
+def verify_otp():
+    if "reset_email" not in session:
+        flash("Please enter your email first.", "danger")
+        return redirect(url_for("forgot_password"))
+    
+    email = session["reset_email"]
+    
+    if request.method == "POST":
+        entered_otp = request.form["otp"]
+        
+        # Find OTP record
+        otp_record = otp_collection.find_one({"email": email})
+        
+        if not otp_record:
+            flash("OTP not found or expired. Please request again.", "danger")
+            return redirect(url_for("forgot_password"))
+        
+        # Check if OTP expired
+        if datetime.now() > otp_record["expiry"]:
+            # Delete expired OTP
+            otp_collection.delete_one({"_id": otp_record["_id"]})
+            flash("OTP has expired. Please request a new one.", "danger")
+            return redirect(url_for("forgot_password"))
+        
+        # Verify OTP
+        if entered_otp == otp_record["otp"]:
+            # Store the role in session for redirection after password update
+            session["user_role"] = otp_record["role"]
+            # Delete used OTP
+            otp_collection.delete_one({"_id": otp_record["_id"]})
+            # Redirect to password update alert
+            return redirect(url_for("password_update_alert"))
+        else:
+            flash("Invalid OTP. Please try again.", "danger")
+    
+    return render_template("verification.html")
+
+@app.route("/password-update-alert")
+def password_update_alert():
+    if "reset_email" not in session:
+        return redirect(url_for("login"))
+    
+    return render_template("password_updation_alert.html")
+
+@app.route("/dashboard-redirect")
+def dashboard_redirect():
+    if "reset_email" not in session or "user_role" not in session:
+        return redirect(url_for("login"))
+    
+    # Set the user session
+    session["user"] = session["reset_email"]
+    session["role"] = session["user_role"]
+    
+    # Clear reset session data
+    session.pop("reset_email", None)
+    session.pop("user_role", None)
+    
+    # Redirect based on role
+    if session["role"] == "admin":
+        return redirect(url_for("admin_dashboard"))
+    else:
+        return redirect(url_for("user_dashboard"))
+
+@app.route("/password-updation", methods=["GET", "POST"])
+def password_updation():
+    if "reset_email" not in session:
+        return redirect(url_for("login"))
+    
+    if request.method == "POST":
+        new_password = request.form["new_password"]
+        confirm_password = request.form["confirm_password"]
+        
+        if new_password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return render_template("password_updation.html")
+        
+        # Update password in database
+        users_collection.update_one(
+            {"email": session["reset_email"]},
+            {"$set": {"password": new_password}}
+        )
+        
+        flash("Password updated successfully!", "success")
+        
+        # Store user info in session and prepare for dashboard redirect
+        user = users_collection.find_one({"email": session["reset_email"]})
+        if user:
+            session["user"] = session["reset_email"]
+            session["role"] = user["role"]
+            
+        # Clear reset session data
+        session.pop("reset_email", None)
+        session.pop("user_role", None)
+        
+        # Redirect to login
+        return redirect(url_for("login"))
+    
+    return render_template("password_updation.html")
 
 @app.route("/admin-dashboard")
 def admin_dashboard():
