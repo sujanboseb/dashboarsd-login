@@ -800,32 +800,6 @@
             </div>
           </div>
         </div>
-        
-        <!-- Customer Order History -->
-        <div class="card mb-4">
-          <div class="card-header">
-            <h5>Customer Order History</h5>
-          </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Customer</th>
-                    <th>Orders</th>
-                    <th>Products</th>
-                    <th>Total Value</th>
-                    <th>Last Order</th>
-                  </tr>
-                </thead>
-                <tbody id="customerOrderHistoryBody">
-                  <!-- Data will be dynamically populated -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        
         <!-- Fast Moving Products Table -->
         <div class="card mb-4">
           <div class="card-header">
@@ -837,7 +811,7 @@
                 <thead>
                   <tr>
                     <th>Product Name</th>
-                    <th>Quantity</th>
+                    <th>Quantity in stock</th>
                     <th>Category</th>
                   </tr>
                 </thead>
@@ -1203,7 +1177,7 @@
           beginAtZero: true,
           ticks: {
             callback: function(value) {
-              return '$' + value.toLocaleString();
+              return '₹' + value.toLocaleString();
             }
           }
         }
@@ -1267,7 +1241,7 @@
           },
           ticks: {
             callback: function(value) {
-              return '$' + value.toLocaleString();
+              return '₹' + value.toLocaleString();
             }
           }
         },
@@ -1350,7 +1324,7 @@
       else if (stockPercentage > 25) alertClass = "info";
       
       const alertHtml = `
-        <div class="alert alert-${alertClass} d-flex align-items-center mb-2">
+        <div class="alert alert-₹{alertClass} d-flex align-items-center mb-2">
           <div class="flex-grow-1">
             <h6 class="mb-0">${item["Product Name"]}</h6>
             <div class="small text-muted">
